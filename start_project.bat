@@ -6,15 +6,15 @@ echo.
 
 :: Start Backend
 echo Starting Backend...
-start cmd /k "title Backend Server && cd backend && venv\Scripts\activate && uvicorn main:app --reload --port 8888"
+start cmd /k "title Backend Server && cd backend && call venv\Scripts\activate && pip install -r requirements.txt && uvicorn main:app --reload --port 8888"
 
 :: Start Capture Engine
 echo Starting Capture Engine...
-start cmd /k "title Capture Engine && cd capture && ..\backend\venv\Scripts\activate && pip install -r requirements.txt && python main.py"
+start cmd /k "title Capture Engine && cd capture && call ..\backend\venv\Scripts\activate && pip install -r requirements.txt && python main.py"
 
 :: Start Frontend
 echo Starting Frontend...
-start cmd /k "title Frontend React && cd frontend && npm run dev"
+start cmd /k "title Frontend React && cd frontend && call npm install && call npm run dev"
 
 echo.
 echo All services have been launched in separate windows!
