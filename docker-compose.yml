@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: netanalyzer_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: netanalyzer
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: netanalyzer_backend
+    restart: always
+    ports:
+      - "8888:8888"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=mysql+pymysql://root:@db:3306/netanalyzer
+      - SECRET_KEY=change-me-in-production-secret-key-32chars!!
+      - INTERNAL_API_KEY=internal-capture-service-key
+      - FIRST_ADMIN_EMAIL=admin@netanalyzer.local
+      - FIRST_ADMIN_PASSWORD=Admin@123
+    command: uvicorn main:app --host 0.0.0.0 --port 8888
+
+  capture:
+    build: ./capture
+    container_name: netanalyzer_capture
+    restart: always
+    network_mode: host
+    depends_on:
+      - backend
+    environment:
+      - BACKEND_URL=http://127.0.0.1:8888
+      - INTERNAL_API_KEY=internal-capture-service-key
+    # Capture needs root permissions
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+
+  frontend:
+    build: ./frontend
+    container_name: netanalyzer_frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:
