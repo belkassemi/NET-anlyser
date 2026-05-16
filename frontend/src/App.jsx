@@ -11,7 +11,8 @@ import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 
 function PrivateRoute({ children }) {
-  return localStorage.getItem("token") ? children : <Navigate to="/login" replace />;
+  // Bypass login completely
+  return children;
 }
 
 export default function App() {
